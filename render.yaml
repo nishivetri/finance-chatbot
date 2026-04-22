@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: finance-chatbot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    # Use Streamlit as the web process. Render provides the port via $PORT.
+    startCommand: "streamlit run streamlit_app.py --server.port $PORT --server.headless true"
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false

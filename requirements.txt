@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langchain>=1.0.0
+langchain-openai
+langchain-community
+openai>=1.0.0
+faiss-cpu
+python-dotenv
+pymupdf
+docx2txt
+streamlit
