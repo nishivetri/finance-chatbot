@@ -60,11 +60,13 @@ with st.sidebar:
             build_index()
     st.markdown("---")
     st.markdown(
-        "Indexing uses **local** embeddings (no key). "
-        "For answers you need `OPENAI_API_KEY` in `.env` **and** billing/credits on that OpenAI account "
-        "([billing](https://platform.openai.com/account/billing))."
+        "**Answers (LLM):** set one of: `GROQ_API_KEY` ([Groq console](https://console.groq.com/keys)), "
+        "`GOOGLE_API_KEY` ([AI Studio](https://aistudio.google.com/apikey)), or `OPENAI_API_KEY`. "
+        "Optional: `LLM_PROVIDER` = `groq` | `google` | `openai` | `ollama`. "
+        "If unset, the first available key above is used (Groq before OpenAI). "
+        "**Local [Ollama](https://ollama.com):** no cloud key; install and `ollama pull llama3.2`."
     )
-    st.caption(f"Chat model: `{OPENAI_MODEL}` (override with `OPENAI_MODEL` in `.env`).")
+    st.caption(f"Active chat: `{active_llm_label()}`")
 
 qa_components = load_qa()
 

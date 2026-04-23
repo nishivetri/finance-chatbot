@@ -11,3 +11,5 @@ docx2txt
 streamlit
 sentence-transformers
 langchain-huggingface
+langchain-groq
+langchain-google-genai
