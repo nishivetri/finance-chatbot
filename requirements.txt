@@ -9,3 +9,5 @@ python-dotenv
 pymupdf
 docx2txt
 streamlit
+sentence-transformers
+langchain-huggingface

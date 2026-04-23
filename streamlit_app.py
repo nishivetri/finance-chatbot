@@ -5,8 +5,11 @@ from dotenv import load_dotenv
 
 import streamlit as st
 
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
+
+from embedding_config import load_embeddings_for_vectorstore
+from llm_factory import active_llm_label, get_chat_llm
+from llm_helpers import llm_error_message
 
 load_dotenv()
 
@@ -18,11 +21,13 @@ DATA_DIR = "vectorstore"
 
 @st.cache_resource
 def load_qa():
-    embeddings = OpenAIEmbeddings()
     if not os.path.exists(DATA_DIR):
         return None
-    db = FAISS.load_local(DATA_DIR, embeddings)
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    embeddings = load_embeddings_for_vectorstore(DATA_DIR)
+    db = FAISS.load_local(
+        DATA_DIR, embeddings, allow_dangerous_deserialization=True
+    )
+    llm = get_chat_llm()
     
     retriever = db.as_retriever(search_kwargs={"k": 3})
     
@@ -36,7 +41,9 @@ def build_index():
     st.info("Running ingestion to (re)build vectorstore. This can take a while...")
     try:
         subprocess.run([sys.executable, "ingest.py"], check=True)
+        st.cache_resource.clear()
         st.success("Ingestion finished. Reloading index...")
+        st.rerun()
     except subprocess.CalledProcessError as e:
         st.error(f"Ingestion failed: {e}")
 
@@ -52,7 +59,12 @@ with st.sidebar:
         if st.button("Rebuild index"):
             build_index()
     st.markdown("---")
-    st.markdown("Ensure `OPENAI_API_KEY` is set in the environment or `.env` file.")
+    st.markdown(
+        "Indexing uses **local** embeddings (no key). "
+        "For answers you need `OPENAI_API_KEY` in `.env` **and** billing/credits on that OpenAI account "
+        "([billing](https://platform.openai.com/account/billing))."
+    )
+    st.caption(f"Chat model: `{OPENAI_MODEL}` (override with `OPENAI_MODEL` in `.env`).")
 
 qa_components = load_qa()
 
@@ -95,4 +107,6 @@ Answer:"""
                         st.write(doc.metadata.get("source", "unknown"))
                         
             except Exception as e:
-                st.error(f"Error running QA: {e}")
+                st.markdown(llm_error_message(e))
+                with st.expander("Technical details"):
+                    st.code(str(e))
